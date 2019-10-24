@@ -1,8 +1,8 @@
 # nand2tetris
 
 Things to do:
-1. Boolean Logic &#9744; - **in progress**
-2. Boolean Arithmetic &#9744;
+1. Boolean Logic &#9745;
+2. Boolean Arithmetic &#9744; - **in progress**
 3. Sequential Logic &#9744;
 4. Machine Language &#9744;
 5. Computer Architecture &#9744;
