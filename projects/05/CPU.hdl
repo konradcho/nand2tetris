@@ -40,4 +40,41 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+    Mux16(a=instruction, b=aluOut, sel=instruction[15], out=instrMuxOut);
+
+    Not(in=instruction[15], out=isAOpCode);
+    Or(a=isAOpCode, b=instruction[5], out=writeA);
+    ARegister(in=instrMuxOut, load=writeA, out=ARegOut, out[0..14]=addressM);
+
+    Mux16(a=ARegOut, b=inM, sel=instruction[12], out=instrOut);
+
+    // do not write to D when A-instruction
+    And(a=instruction[15], b=instruction[4], out=writeD);
+    DRegister(in=aluOut, load=writeD, out=DRegOut);
+
+    ALU(x=DRegOut, y=instrOut, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=outM, out=aluOut, zr=aluZR, ng=aluNG);
+
+    And(a=instruction[15], b=instruction[3], out=writeM);
+
+    // zr == 0 && ng == 0
+    And(a=notZR, b=notNG, out=outB);
+    // zr == 1 && ng == 0
+    And(a=aluZR, b=notNG, out=outC);
+    // ng == 0
+    Not(in=aluNG, out=notNG);
+    // zr == 0 && ng == 1
+    And(a=notZR, b=aluNG, out=outE);
+    // zr == 0
+    Not(in=aluZR, out=notZR);
+    // (zr == 0 && ng == 1) || (zr == 1 && ng == 0)
+    Or(a=outE, b=outC, out=outG);
+    
+    Mux8Way16(a=false, b[0]=outB, c[0]=outC, d[0]=notNG, e[0]=outE, f[0]=notZR, g[0]=outG, h=true, sel=instruction[0..2], out[0]=jump); 
+    // do not jump when A-instruction
+    And(a=instruction[15], b=jump, out=pcLoad);
+
+    // increment when load == 0
+    Not(in=pcLoad, out=incPC);
+
+    PC(in=ARegOut, load=pcLoad, inc=incPC, reset=reset, out[0..14]=pc); 
 }
